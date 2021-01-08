@@ -105,7 +105,7 @@
             });
             services.AddLogging(loggingBuilder =>
             {
-                // 使用NLog做完日志组件
+                // 使用NLog作为日志组件
                 loggingBuilder.ClearProviders();
                 loggingBuilder.SetMinimumLevel(LogLevel.Trace);
                 loggingBuilder.AddNLog();
