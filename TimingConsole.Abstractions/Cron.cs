@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace TimingConsole.Abstractions
 {
@@ -20,6 +21,11 @@ namespace TimingConsole.Abstractions
             /// 定时任务逻辑类型
             /// </summary>
             public Type ExecType;
+
+            /// <summary>
+            /// 定时任务定时器
+            /// </summary>
+            public Timer Timer;
         }
     }
 }

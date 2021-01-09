@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +32,7 @@ namespace TimingConsole.Abstractions
         /// <summary>
         /// 定时任务定时器集合
         /// </summary>
-        private List<Timer> m_CronTimers;
+        //private List<Timer> m_CronTimers;
 
         /// <summary>
         /// 配置
@@ -112,6 +111,80 @@ namespace TimingConsole.Abstractions
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// 暂停已配置的定时任务
+        /// </summary>
+        /// <exception cref="ArgumentException">定时任务类型未配置</exception>
+        /// <typeparam name="T">已配置的定时任务类型</typeparam>
+        public void CronPause<T>()
+        {
+            CronPause(typeof(T));
+        }
+
+        /// <summary>
+        /// 暂停已配置的定时任务
+        /// </summary>
+        /// <exception cref="ArgumentException">定时任务类型未配置</exception>
+        /// <param name="t">已配置的定时任务类型</param>
+        public void CronPause(Type t)
+        {
+            CronCollection.Cron c = default;
+            foreach(var cron in m_Crons)
+            {
+                if(cron.ExecType == t)
+                {
+                    c = cron;
+                    break;
+                }
+            }
+            if (c != null)
+            {
+                // 停止定时器
+                c.Timer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+            }
+            else
+            {
+                throw new ArgumentException($"Cron [{t.Name}] not found");
+            }
+        }
+
+        /// <summary>
+        /// 开始已暂停的定时任务
+        /// </summary>
+        /// <exception cref="ArgumentException">定时任务类型未配置</exception>
+        /// <typeparam name="T">已配置的定时任务类型</typeparam>
+        public void CronStart<T>()
+        {
+            CronStart(typeof(T));
+        }
+
+        /// <summary>
+        /// 开始已暂停的定时任务
+        /// </summary>
+        /// <exception cref="ArgumentException">定时任务类型未配置</exception>
+        /// <param name="t">已配置的定时任务类型</param>
+        public void CronStart(Type t)
+        {
+            CronCollection.Cron c = default;
+            foreach (var cron in m_Crons)
+            {
+                if (cron.ExecType == t)
+                {
+                    c = cron;
+                    break;
+                }
+            }
+            if (c != null)
+            {
+                // 开始定时器
+                c.Timer.Change(TimeSpan.Zero, c.Interval);
+            }
+            else
+            {
+                throw new ArgumentException($"Cron [{t.Name}] not found");
             }
         }
 
@@ -209,7 +282,8 @@ namespace TimingConsole.Abstractions
                 }
 
                 Timer timer = new Timer(ExecCron, cron.ExecType, TimeSpan.FromSeconds(5), cron.Interval);
-                m_CronTimers.Add(timer);
+                //m_CronTimers.Add(timer);
+                cron.Timer = timer;
             }
         }
 
@@ -244,16 +318,19 @@ namespace TimingConsole.Abstractions
 
         private void CronEnd()
         {
-            Task[] dispTks = new Task[m_CronTimers.Count];
+            int cronCnt = m_Crons.Count();
+            int idx = 0;
+            Task[] dispTks = new Task[cronCnt];
             // 关闭定时器
-            for (int i = 0; i < m_CronTimers.Count; i++)
+            foreach(var cron in m_Crons)
             {
-                var timer = m_CronTimers[i];
+                var timer = cron.Timer;
                 // 等待正在执行的任务完成
-                dispTks[i] = Task.Run(async () =>
+                dispTks[idx] = Task.Run(async () =>
                 {
                     await timer.DisposeAsync();
                 });
+                idx++;
             }
             Task.WaitAll(dispTks);
 
@@ -286,9 +363,10 @@ namespace TimingConsole.Abstractions
         /// </summary>
         private void Initialize()
         {
-            m_CronTimers = new List<Timer>();
             var serviceArr = new ServiceCollection();
             SetConfiguration(serviceArr);
+            // 将自己加入依赖注入
+            serviceArr.AddSingleton<ConsoleApp>((sp) => { return this; });
             ConfigureServices(m_Configuration, serviceArr);
 
             var cmds = new CommandCollection(serviceArr);
