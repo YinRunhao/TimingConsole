@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 控制台程序基类
@@ -132,20 +132,14 @@ namespace MyConsole.Abstractions
         /// 控制台打印输出
         /// </summary>
         /// <param name="msg"></param>
-        protected virtual void Output(string msg)
-        {
-            Console.WriteLine("> " + msg);
-        }
+        protected abstract void Output(string msg);
 
         /// <summary>
         /// 控制台输入
         /// </summary>
         /// <remarks>若要退出程序请返回null</remarks>
         /// <returns></returns>
-        protected virtual string Input()
-        {
-            return Console.ReadLine();
-        }
+        protected abstract string Input();
 
         /// <summary>
         /// 获取主模块的日志器，该日志器用于记录本类库产生的日志
@@ -154,7 +148,8 @@ namespace MyConsole.Abstractions
         /// <returns></returns>
         protected virtual ILogger GetLogger()
         {
-            return m_Service.GetService<ILogger>();
+            return null;
+            //return m_Service.GetService<ILogger>();
         }
 
         /// <summary>
@@ -271,7 +266,7 @@ namespace MyConsole.Abstractions
                     try
                     {
                         c = scope.ServiceProvider.GetRequiredService(cron.ExecType) as ICron;
-                        c.Exit().Wait();
+                        c.Exit().GetAwaiter().GetResult();
                         if (c is IDisposable dis)
                         {
                             dis.Dispose();

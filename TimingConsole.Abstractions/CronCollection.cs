@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 定时任务集合

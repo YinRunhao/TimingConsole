@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyConsole.Abstractions\MyConsole.Abstractions.csproj" />
+    <ProjectReference Include="..\TimingConsole.Abstractions\TimingConsole.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

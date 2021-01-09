@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 控制台命令集合

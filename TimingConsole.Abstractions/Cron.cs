@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     public partial class CronCollection
     {

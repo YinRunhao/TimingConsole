@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyConsole\MyConsole.csproj" />
+    <ProjectReference Include="..\TimingConsole\TimingConsole.csproj" />
   </ItemGroup>
 
   <ItemGroup>

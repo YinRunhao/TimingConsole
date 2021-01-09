@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 定时任务接口

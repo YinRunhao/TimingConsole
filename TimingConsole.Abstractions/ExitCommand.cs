@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 退出命令

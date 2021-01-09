@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MyConsole.Abstractions
+namespace TimingConsole.Abstractions
 {
     /// <summary>
     /// 处理执行结果

@@ -1,4 +1,4 @@
-﻿using MyConsole.Abstractions;
+﻿using TimingConsole.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;

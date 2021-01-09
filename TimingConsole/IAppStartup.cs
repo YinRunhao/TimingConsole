@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MyConsole.Abstractions;
+using TimingConsole.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MyConsole
+namespace TimingConsole
 {
     /// <summary>
     /// 控制台应用启动项接口

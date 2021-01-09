@@ -105,7 +105,7 @@
             });
             services.AddLogging(loggingBuilder =>
             {
-                // 使用NLog做完日志组件
+                // 使用NLog作为日志组件
                 loggingBuilder.ClearProviders();
                 loggingBuilder.SetMinimumLevel(LogLevel.Trace);
                 loggingBuilder.AddNLog();
@@ -132,6 +132,15 @@
 ### 不使用默认实现
 
 可以自行继承**MyConsole.Abstractions**里面的**ConsoleApp**抽象类来实现更多自定义功能。
+
+### 命令行使用示例
+
+> commands.AddCommand<StrLenCommand>("strlen");
+
+如上所示，在启动配置中添加了StrLenCommand命令，命令的名称是**strlen**
+在控制台中输入："strlen helloworld"即可以helloworld作为参数调用StrLenCommand的Execute方法。
+控制台输入字符串解析规则： {命令名称} {参数1} {参数2} ...
+
 
 ## 注意事项
 
