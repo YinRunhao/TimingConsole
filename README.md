@@ -1,4 +1,4 @@
-# MyConsole
+# TimingConsole
 
 一个基于.Net Standard 2.1的控制台程序模板框架，可在其轻松添加定时任务和命令行交互。使用了.Net标准的依赖注入扩展、日志扩展和配置文件扩展，能像在ASP.net Core中一样轻松获取对象和配置程序。
 
@@ -131,7 +131,7 @@
 
 ### 不使用默认实现
 
-可以自行继承**MyConsole.Abstractions**里面的**ConsoleApp**抽象类来实现更多自定义功能。
+可以自行继承**TimingConsole.Abstractions**里面的**ConsoleApp**抽象类来实现更多自定义功能。
 
 ### 命令行使用示例
 
