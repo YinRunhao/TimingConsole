@@ -143,7 +143,7 @@ namespace TimingConsole.Abstractions
             if (c != null)
             {
                 // 停止定时器
-                c.Timer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+                c.Timer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
             }
             else
             {
