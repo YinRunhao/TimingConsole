@@ -26,7 +26,12 @@ namespace Demo
             // 添加定时任务处理对象
             // 读取配置
             int interval = config.GetValue<int>("HelloInterval");
+
+            // 通过TimeSpan配置
             crons.AddCron<HelloCron>(TimeSpan.FromSeconds(interval));
+
+            // 通过CRON表达式配置
+            //crons.AddCron<HelloCron>("*/10 * * * * ?");
         }
 
         public void ConfigureServices(IConfiguration config, IServiceCollection services)

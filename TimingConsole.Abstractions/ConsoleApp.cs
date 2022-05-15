@@ -30,11 +30,6 @@ namespace TimingConsole.Abstractions
         protected CronCollection m_Crons;
 
         /// <summary>
-        /// 定时任务定时器集合
-        /// </summary>
-        //private List<Timer> m_CronTimers;
-
-        /// <summary>
         /// 配置
         /// </summary>
         private IConfiguration m_Configuration;
@@ -64,7 +59,7 @@ namespace TimingConsole.Abstractions
             while (m_Exit == 0)
             {
                 cmdStr = Input();
-                if(cmdStr == null)
+                if (cmdStr == null)
                 {
                     cmdStr = string.Empty;
                     Exit();
@@ -132,9 +127,9 @@ namespace TimingConsole.Abstractions
         public void CronPause(Type t)
         {
             CronCollection.Cron c = default;
-            foreach(var cron in m_Crons)
+            foreach (var cron in m_Crons)
             {
-                if(cron.ExecType == t)
+                if (cron.ExecType == t)
                 {
                     c = cron;
                     break;
@@ -179,8 +174,9 @@ namespace TimingConsole.Abstractions
             }
             if (c != null)
             {
+                var ts = c.GetNextTimeSpan();
                 // 开始定时器
-                c.Timer.Change(TimeSpan.Zero, c.Interval);
+                c.Timer.Change(ts, TimeSpan.Zero);
             }
             else
             {
@@ -193,7 +189,7 @@ namespace TimingConsole.Abstractions
         /// </summary>
         protected void Exit()
         {
-            if(m_Exit == 0)
+            if (m_Exit == 0)
             {
                 m_Exit = 1;
                 // 关闭定时器
@@ -281,15 +277,16 @@ namespace TimingConsole.Abstractions
                     }
                 }
 
-                Timer timer = new Timer(ExecCron, cron.ExecType, TimeSpan.FromSeconds(5), cron.Interval);
-                //m_CronTimers.Add(timer);
+                var ts = cron.GetNextTimeSpan();
+                Timer timer = new Timer(ExecCron, cron, ts, TimeSpan.Zero);
                 cron.Timer = timer;
             }
         }
 
         private void ExecCron(object state)
         {
-            Type tp = state as Type;
+            CronCollection.Cron self = state as CronCollection.Cron;
+            Type tp = self.ExecType;
             ICron cron = default;
             if (tp != null)
             {
@@ -314,6 +311,9 @@ namespace TimingConsole.Abstractions
                 }
                 Output(print);
             }
+
+            var ts = self.GetNextTimeSpan();
+            self.Timer.Change(ts, TimeSpan.Zero);
         }
 
         private void CronEnd()
@@ -322,7 +322,7 @@ namespace TimingConsole.Abstractions
             int idx = 0;
             Task[] dispTks = new Task[cronCnt];
             // 关闭定时器
-            foreach(var cron in m_Crons)
+            foreach (var cron in m_Crons)
             {
                 var timer = cron.Timer;
                 // 等待正在执行的任务完成

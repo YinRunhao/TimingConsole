@@ -3,6 +3,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using TimingConsole;
+using Cronos;
 
 namespace Demo
 {
@@ -15,7 +16,8 @@ namespace Demo
             // ConsoleAppBuilder.CreateDefaultConsoleApp<DemoStartup>().Run();
 
             // 指定日志器记录自身日志
-            ConsoleAppBuilder.CreateDefaultConsoleApp<DemoStartup>((sp)=> {
+            ConsoleAppBuilder.CreateDefaultConsoleApp<DemoStartup>((sp) =>
+            {
                 return sp.GetService<ILogger>();
             }).Run();
         }
