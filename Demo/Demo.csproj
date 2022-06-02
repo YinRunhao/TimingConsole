@@ -7,11 +7,13 @@
 
   <ItemGroup>
     <PackageReference Include="Cronos" Version="0.7.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog.Config" Version="4.7.6" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TimingConsole.Extensions.MQTTClient\TimingConsole.Extensions.MQTTClient.csproj" />
     <ProjectReference Include="..\TimingConsole\TimingConsole.csproj" />
   </ItemGroup>
 

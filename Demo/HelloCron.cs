@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MQTTnet.Client;
+using MQTTnet;
 
 namespace Demo
 {
@@ -11,7 +13,7 @@ namespace Demo
     /// </summary>
     public class HelloCron : ICron
     {
-        public async Task<HandleResult> Execute()
+        public async Task<HandleResult> ExecuteAsync()
         {
             HandleResult result = new HandleResult();
             // 假装工作了100ms
@@ -20,15 +22,16 @@ namespace Demo
             result.Message = "Hello World";
             // 返回码，小于0退出程序
             result.Code = 1;
+
             return result;
         }
 
-        public Task Exit()
+        public Task ExitAsync()
         {
             return Task.CompletedTask;
         }
 
-        public Task Start()
+        public Task StartAsync()
         {
             return Task.CompletedTask;
         }

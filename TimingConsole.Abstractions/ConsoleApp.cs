@@ -15,19 +15,19 @@ namespace TimingConsole.Abstractions
     public abstract class ConsoleApp
     {
         /// <summary>
-        /// 依赖注入集合
-        /// </summary>
-        protected IServiceProvider m_Service;
-
-        /// <summary>
         /// 命令集合
         /// </summary>
-        protected CommandCollection m_Commands;
+        public CommandCollection Commands { get; private set; }
 
         /// <summary>
         /// 定时任务集合
         /// </summary>
-        protected CronCollection m_Crons;
+        public CronCollection Crons { get; private set; }
+
+        /// <summary>
+        /// 依赖注入集合
+        /// </summary>
+        protected IServiceProvider m_Service;
 
         /// <summary>
         /// 配置
@@ -50,7 +50,7 @@ namespace TimingConsole.Abstractions
         {
             Initialize();
             m_Exit = 0;
-            CronRun();
+            RunConsoleService();
             string cmdStr = string.Empty;
             string cmdNm = string.Empty;
             HandleResult result;
@@ -73,7 +73,7 @@ namespace TimingConsole.Abstractions
                 {
                     var cmdParam = GetCommandParam(param);
                     cmdNm = cmdParam.cmdNm;
-                    cmdTp = m_Commands[cmdNm];
+                    cmdTp = Commands[cmdNm];
                     if (cmdTp == null)
                     {
                         Output($"Command [{cmdNm.Trim()}] not found");
@@ -127,7 +127,7 @@ namespace TimingConsole.Abstractions
         public void CronPause(Type t)
         {
             CronCollection.Cron c = default;
-            foreach (var cron in m_Crons)
+            foreach (var cron in Crons)
             {
                 if (cron.ExecType == t)
                 {
@@ -164,7 +164,7 @@ namespace TimingConsole.Abstractions
         public void CronStart(Type t)
         {
             CronCollection.Cron c = default;
-            foreach (var cron in m_Crons)
+            foreach (var cron in Crons)
             {
                 if (cron.ExecType == t)
                 {
@@ -192,8 +192,7 @@ namespace TimingConsole.Abstractions
             if (m_Exit == 0)
             {
                 m_Exit = 1;
-                // 关闭定时器
-                CronEnd();
+                StopConsoleService();
             }
         }
 
@@ -201,21 +200,21 @@ namespace TimingConsole.Abstractions
         /// 控制台打印输出
         /// </summary>
         /// <param name="msg"></param>
-        protected abstract void Output(string msg);
+        public abstract void Output(string msg);
 
         /// <summary>
         /// 控制台输入
         /// </summary>
         /// <remarks>若要退出程序请返回null</remarks>
         /// <returns></returns>
-        protected abstract string Input();
+        public abstract string Input();
 
         /// <summary>
         /// 获取主模块的日志器，该日志器用于记录本类库产生的日志
         /// </summary>
         /// <remarks>可根据业务情景自行实现，若不希望本类库产生日志请返回null</remarks>
         /// <returns></returns>
-        protected virtual ILogger GetLogger()
+        public virtual ILogger GetLogger()
         {
             return null;
             //return m_Service.GetService<ILogger>();
@@ -254,107 +253,38 @@ namespace TimingConsole.Abstractions
         /// <param name="config">配置文件</param>
         protected abstract void ConfigureCron(IConfiguration config, CronCollection crons);
 
-        private async void CronRun()
+        private async void RunConsoleService()
         {
-            ICron c = default;
-            foreach (var cron in m_Crons)
+            //CronRun();
+            var svcs = m_Service.GetServices<IConsoleService>();
+            foreach (var item in svcs)
             {
-                using (var scope = m_Service.CreateScope())
-                {
-                    try
-                    {
-                        c = scope.ServiceProvider.GetRequiredService(cron.ExecType) as ICron;
-                        await c.Start();
-                        if (c is IDisposable dis)
-                        {
-                            dis.Dispose();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        GetLogger()?.LogError(ex, "CRON start error");
-                        Output("CRON start error:" + ex.Message);
-                    }
-                }
-
-                var ts = cron.GetNextTimeSpan();
-                Timer timer = new Timer(ExecCron, cron, ts, TimeSpan.Zero);
-                cron.Timer = timer;
+                await item.StartAsync();
             }
         }
 
-        private void ExecCron(object state)
+        private void StopConsoleService()
         {
-            CronCollection.Cron self = state as CronCollection.Cron;
-            Type tp = self.ExecType;
-            ICron cron = default;
-            if (tp != null)
-            {
-                string print = string.Empty;
-                using (var scope = m_Service.CreateScope())
-                {
-                    try
-                    {
-                        cron = scope.ServiceProvider.GetRequiredService(tp) as ICron;
-                        var result = cron.Execute().GetAwaiter().GetResult();
-                        print = result.Message;
-                        if (cron is IDisposable dis)
-                        {
-                            dis.Dispose();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        GetLogger()?.LogError(ex, "CRON execute error");
-                        print = "CRON execute error:" + ex.Message;
-                    }
-                }
-                Output(print);
-            }
-
-            var ts = self.GetNextTimeSpan();
-            self.Timer.Change(ts, TimeSpan.Zero);
-        }
-
-        private void CronEnd()
-        {
-            int cronCnt = m_Crons.Count();
-            int idx = 0;
-            Task[] dispTks = new Task[cronCnt];
             // 关闭定时器
-            foreach (var cron in m_Crons)
+            //CronEnd();
+            var svcs = m_Service.GetServices<IConsoleService>();
+            var cnt = svcs.Count();
+            if (cnt > 0)
             {
-                var timer = cron.Timer;
-                // 等待正在执行的任务完成
-                dispTks[idx] = Task.Run(async () =>
+                int idx = 0;
+                Task[] stopTks = new Task[cnt];
+                // 先开的服务最后关，后面的服务可能会依赖前面开启的服务
+                var r_svcs = svcs.Reverse();
+                foreach (var item in r_svcs)
                 {
-                    await timer.DisposeAsync();
-                });
-                idx++;
-            }
-            Task.WaitAll(dispTks);
-
-            // 调用定时任务的结束方法
-            ICron c;
-            foreach (var cron in m_Crons)
-            {
-                using (var scope = m_Service.CreateScope())
-                {
-                    try
+                    // 同时关闭可能会有bug 20220602
+                    stopTks[idx] = Task.Run(async () =>
                     {
-                        c = scope.ServiceProvider.GetRequiredService(cron.ExecType) as ICron;
-                        c.Exit().GetAwaiter().GetResult();
-                        if (c is IDisposable dis)
-                        {
-                            dis.Dispose();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        GetLogger()?.LogError(ex, "CRON exit error");
-                        Output("CRON exit error:" + ex.Message);
-                    }
+                        await item.StopAsync();
+                    });
+                    idx++;
                 }
+                Task.WaitAll(stopTks);
             }
         }
 
@@ -376,10 +306,12 @@ namespace TimingConsole.Abstractions
 
             ConfigureCommand(m_Configuration, cmds);
             ConfigureCron(m_Configuration, crons);
+            // 加入定时任务服务
+            serviceArr.AddConsoleService<CronService>();
             m_Service = serviceArr.BuildServiceProvider();
 
-            m_Commands = cmds;
-            m_Crons = crons;
+            Commands = cmds;
+            Crons = crons;
         }
 
         private void SetConfiguration(IServiceCollection services)

@@ -62,17 +62,17 @@ namespace TimingConsole
             m_Startup.ConfigureServices(config, services);
         }
 
-        protected override string Input()
+        public override string Input()
         {
             return Console.ReadLine();
         }
 
-        protected override void Output(string msg)
+        public override void Output(string msg)
         {
             Console.WriteLine("> " + msg);
         }
 
-        protected override ILogger GetLogger()
+        public override ILogger GetLogger()
         {
             if(null == m_GetLogger)
             {
